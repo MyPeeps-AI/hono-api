@@ -73,7 +73,7 @@ app.post('/character/:id', async c => {
 	} else {
 		// update myPeep
 		const myPeepLoaded = JSON.parse(storedPeep)
-		myPeep = {ZZ
+		myPeep = {
 			id: peepId,
 			name: c.req.query('name') || myPeepLoaded.name,
 			contextDescription: c.req.query('contextDescription') || myPeepLoaded.contextDescription,
