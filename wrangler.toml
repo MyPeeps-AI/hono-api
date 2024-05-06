@@ -7,6 +7,13 @@ compatibility_flags = ["nodejs_compat"]
 [ai]
 binding = "AI"
 
+[vars]
+MY_NAME = "Sherlock"
+
+[[kv_namespaces]]
+binding = "MYPEEPS_KV"
+id = "393b791fbe3f480b8ac368b1c7eb5ff4"
+
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
 # rather than the end user may result in better performance.
