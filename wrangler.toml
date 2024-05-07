@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "AI"
 
 [vars]
-MY_NAME = "Sherlock"
+LLM_MODEL = "@cf/meta/llama-3-8b-instruct"
 
 [[kv_namespaces]]
 binding = "MYPEEPS_KV"

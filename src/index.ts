@@ -2,7 +2,7 @@ import { Ai} from '@cloudflare/ai'
 import { Hono } from 'hono'
 
 export interface Bindings {
-	MY_NAME: string
+	LLM_MODEL: string
 	AI: any
 	MYPEEPS_KV: KVNamespace
 }
@@ -20,8 +20,6 @@ app.get("/peeps/:id/chat", async c => {
 	const humanInput = c.req.query("message")
 	const characterKey = `${peepId}Character`
 	const historyKey = `${peepId}History_${humanIP}`
-
-
 	const storedPeep = await getInfo(characterKey)
 
 	if (!storedPeep) {
@@ -32,8 +30,7 @@ app.get("/peeps/:id/chat", async c => {
 	let messageHistory  = []
 
 	if (storedHistory) {
-		messageHistory = JSON.parse(storedHistory)
-		console.log(storedHistory, messageHistory)
+		messageHistory = JSON.parse(storedHistory) || []
 	}
 	let systemMessages = []
 	const myPeep = JSON.parse(storedPeep)
@@ -48,8 +45,8 @@ app.get("/peeps/:id/chat", async c => {
 	let messages = systemMessages.concat(messageHistory)
 	const inputs = { messages }
 
-	const response = await ai.run(LLMmodel, inputs)
-	messageHistory.push({role:'ai', content:response.response})
+	const response = await ai.run(c.env.LLM_MODEL, inputs)
+	messageHistory.push({role:'assistant', content:response.response})
 	await saveInfo(historyKey,JSON.stringify(messageHistory))
 	const result = { inputs,messageHistory,systemMessages,response: response.response }
 
@@ -67,6 +64,29 @@ app.get("/", async c => {
 	const name = await c.env.MYPEEPS_KV.get('name')
 	return c.json(name)
 
+})
+
+app.delete("/peeps/:id", async c => {
+	const deleteInfo = (key) => c.env.MYPEEPS_KV.put(key, '');
+
+	const peepId = c.req.param('id')
+	const humanIP = c.req.header('CF-Connecting-IP') || 'GUEST';
+	const characterKey = `${peepId}Character`
+	const historyKey = `${peepId}History_${humanIP}`
+	await deleteInfo(characterKey)
+	await deleteInfo(historyKey)
+
+	return c.json({ message: 'SUCCESS!', historyKey, characterKey, peepId})
+})
+app.delete("/peeps/:id/memory", async c => {
+	const deleteInfo = (key) => c.env.MYPEEPS_KV.put(key, '');
+
+	const peepId = c.req.param('id')
+	const humanIP = c.req.header('CF-Connecting-IP') || 'GUEST';
+	const historyKey = `${peepId}History_${humanIP}`
+	await deleteInfo(historyKey)
+
+	return c.json({ message: 'SUCCESS!', historyKey, peepId})
 })
 
 // creates/ updates character persistence
